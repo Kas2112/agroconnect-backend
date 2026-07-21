@@ -165,3 +165,18 @@ PLATFORM_FEE_PERCENTAGE = 0.03
 # ============ FCM (Firebase Cloud Messaging) ============
 FCM_SERVER_KEY = os.getenv('FCM_SERVER_KEY', '')
 VITE_VAPID_KEY = os.getenv('VITE_VAPID_KEY', '')
+
+# ============ AUTO-CREATE SUPERUSER ============
+# This creates a superuser automatically on deploy
+import sys
+if 'migrate' in sys.argv or 'runserver' in sys.argv:
+    try:
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        if not User.objects.filter(username='admin').exists():
+            User.objects.create_superuser('admin', 'admin@agroconnect.com', 'admin123')
+            print("✅ Superuser 'admin' created with password 'admin123'")
+        else:
+            print("ℹ️ Superuser 'admin' already exists")
+    except Exception as e:
+        print(f"⚠️ Could not create superuser: {e}")
