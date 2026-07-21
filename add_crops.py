@@ -25,7 +25,10 @@ crops = [
 ]
 
 for name, category in crops:
-    Crop.objects.create(name=name, category=category)
-    print(f"Added {name}")
+    crop, created = Crop.objects.get_or_create(name=name, category=category)
+    if created:
+        print(f"✅ Added: {name}")
+    else:
+        print(f"⏭️ Already exists: {name}")
 
-print("All crops added!")
+print(f"\n✅ Total crops: {Crop.objects.count()}")
