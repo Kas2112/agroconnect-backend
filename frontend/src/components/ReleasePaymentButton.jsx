@@ -1,6 +1,6 @@
 // frontend/src/components/ReleasePaymentButton.jsx
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../services/api';  // ← USE API SERVICE
 
 const ReleasePaymentButton = ({ transactionId, onSuccess, onError }) => {
   const [loading, setLoading] = useState(false);
@@ -12,12 +12,10 @@ const ReleasePaymentButton = ({ transactionId, onSuccess, onError }) => {
     setError('');
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post(
-        'http://127.0.0.1:8000/api/payment/release/',
-        { transaction_id: transactionId },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      // ✅ FIXED: Using api instead of axios with hardcoded URL
+      const response = await api.post('/payment/release/', {
+        transaction_id: transactionId
+      });
 
       console.log('📥 Release response:', response.data);
 

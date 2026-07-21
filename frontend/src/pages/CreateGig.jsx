@@ -1,7 +1,7 @@
 // frontend/src/pages/CreateGig.jsx
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';  // ← FIXED: Proper import
 
 const CreateGig = () => {
   const [formData, setFormData] = useState({
@@ -29,6 +29,7 @@ const CreateGig = () => {
     });
   };
 
+  // ✅ FIXED: Using api instead of axios
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -36,12 +37,7 @@ const CreateGig = () => {
     setSuccess('');
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post(
-        'http://127.0.0.1:8000/api/gigs/create/',
-        formData,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const response = await api.post('/gigs/create/', formData);  // ← CHANGED
 
       if (response.data.success) {
         setSuccess('✅ Gig posted successfully!');

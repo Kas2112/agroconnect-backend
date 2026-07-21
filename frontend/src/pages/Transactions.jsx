@@ -1,7 +1,7 @@
 // frontend/src/pages/Transactions.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';  // ← FIXED: Proper import
 
 const Transactions = () => {
   const [transactions, setTransactions] = useState([]);
@@ -20,12 +20,10 @@ const Transactions = () => {
     fetchTransactions();
   }, []);
 
+  // ✅ FIXED: Using api instead of axios
   const fetchTransactions = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('http://127.0.0.1:8000/api/transactions/', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/transactions/');  // ← CHANGED
       setTransactions(response.data.data);
     } catch (error) {
       console.error('Error fetching transactions:', error);

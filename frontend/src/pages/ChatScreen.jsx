@@ -1,7 +1,7 @@
 // frontend/src/pages/ChatScreen.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';  // ← FIXED: Proper import
 
 const ChatScreen = () => {
   const { conversationId } = useParams();
@@ -40,22 +40,17 @@ const ChatScreen = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // ✅ FIXED: Using api instead of axios
   const fetchMessages = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(
-        `http://127.0.0.1:8000/api/conversations/${conversationId}/messages/`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const response = await api.get(`/conversations/${conversationId}/messages/`);  // ← CHANGED
       const data = response.data;
       setMessages(data.data || []);
       
-      // Get conversation info from first message or fetch separately
+      // Get conversation info
       if (data.data && data.data.length > 0 && !conversation) {
-        // Try to get conversation from the first message
         const firstMsg = data.data[0];
         if (firstMsg.conversation) {
-          // We need to fetch conversation details
           fetchConversationDetails();
         }
       } else if (!conversation) {
@@ -74,12 +69,10 @@ const ChatScreen = () => {
     }
   };
 
+  // ✅ FIXED: Using api instead of axios
   const fetchConversationDetails = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`http://127.0.0.1:8000/api/conversations/`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/conversations/');  // ← CHANGED
       const conv = response.data.data?.find(c => c.id === parseInt(conversationId));
       if (conv) {
         setConversation(conv);
@@ -91,21 +84,17 @@ const ChatScreen = () => {
     }
   };
 
+  // ✅ FIXED: Using api instead of axios
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!newMessage.trim()) return;
 
     setSending(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post(
-        'http://127.0.0.1:8000/api/messages/send/',
-        {
-          conversation_id: parseInt(conversationId),
-          content: newMessage.trim()
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const response = await api.post('/messages/send/', {  // ← CHANGED
+        conversation_id: parseInt(conversationId),
+        content: newMessage.trim()
+      });
 
       if (response.data.success) {
         setMessages([...messages, response.data.data]);

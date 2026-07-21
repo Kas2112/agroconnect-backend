@@ -1,6 +1,6 @@
 // frontend/src/components/PayButton.jsx
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../services/api';  // ← USE API SERVICE
 
 const PayButton = ({ applicationId, amount, onSuccess, onError }) => {
   const [loading, setLoading] = useState(false);
@@ -11,25 +11,41 @@ const PayButton = ({ applicationId, amount, onSuccess, onError }) => {
     setError('');
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post(
-        'http://127.0.0.1:8000/api/payment/initialize/',
-        { application_id: applicationId },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      console.log('📤 Sending payment request for application:', applicationId);
+      
+      // ✅ FIXED: Using api instead of axios with hardcoded URL
+      const response = await api.post('/payment/initialize/', {
+        application_id: applicationId
+      });
+
+      console.log('📥 Payment response:', response.data);
 
       if (response.data.success) {
         // Redirect to Paystack payment page
         window.location.href = response.data.data.authorization_url;
         if (onSuccess) onSuccess(response.data);
       } else {
-        setError(response.data.error || 'Payment initialization failed');
-        if (onError) onError(response.data);
+        let errorMsg = response.data.error || 'Payment initialization failed';
+        setError(errorMsg);
+        if (onError) onError({ error: errorMsg });
       }
     } catch (err) {
-      console.error('Payment error:', err);
-      setError(err.response?.data?.error || 'Payment failed. Please try again.');
-      if (onError) onError(err.response?.data);
+      console.error('❌ Payment error:', err);
+      console.error('❌ Response:', err.response?.data);
+      
+      let errorMsg = 'Payment failed. Please try again.';
+      
+      if (err.response?.data?.error) {
+        errorMsg = err.response.data.error;
+      } else if (err.code === 'ERR_NETWORK') {
+        errorMsg = 'Network error: Cannot reach payment gateway. Please check your internet connection.';
+      } else if (err.response?.data?.errors) {
+        const errors = Object.values(errors).flat().join(', ');
+        errorMsg = errors;
+      }
+      
+      setError(errorMsg);
+      if (onError) onError({ error: errorMsg });
     } finally {
       setLoading(false);
     }
@@ -46,7 +62,7 @@ const PayButton = ({ applicationId, amount, onSuccess, onError }) => {
         onClick={handlePay}
         disabled={loading}
         style={{
-          backgroundColor: '#22c55e',
+          backgroundColor: loading ? '#6b7280' : '#22c55e',
           color: 'white',
           padding: '12px 24px',
           border: 'none',
@@ -54,7 +70,6 @@ const PayButton = ({ applicationId, amount, onSuccess, onError }) => {
           fontSize: '16px',
           fontWeight: 'bold',
           cursor: loading ? 'not-allowed' : 'pointer',
-          opacity: loading ? 0.6 : 1,
           width: '100%'
         }}
       >

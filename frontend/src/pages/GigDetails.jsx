@@ -1,7 +1,7 @@
 // frontend/src/pages/GigDetails.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';  // ← FIXED: Proper import
 
 const GigDetails = () => {
   const { id } = useParams();
@@ -29,12 +29,10 @@ const GigDetails = () => {
     fetchGigDetails();
   }, []);
 
+  // ✅ FIXED: Using api instead of axios
   const fetchGigDetails = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`http://127.0.0.1:8000/api/gigs/${id}/`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get(`/gigs/${id}/`);  // ← CHANGED
       setGig(response.data.data);
       setApplicationData(prev => ({
         ...prev,
@@ -54,6 +52,7 @@ const GigDetails = () => {
     });
   };
 
+  // ✅ FIXED: Using api instead of axios
   const handleApplySubmit = async (e) => {
     e.preventDefault();
     setApplying(true);
@@ -61,16 +60,11 @@ const GigDetails = () => {
     setApplySuccess('');
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post(
-        'http://127.0.0.1:8000/api/gigs/apply/',
-        {
-          gig_id: parseInt(id),
-          message: applicationData.message || '',
-          rate_offered: parseFloat(applicationData.rate_offered) || null
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const response = await api.post('/gigs/apply/', {  // ← CHANGED
+        gig_id: parseInt(id),
+        message: applicationData.message || '',
+        rate_offered: parseFloat(applicationData.rate_offered) || null
+      });
 
       if (response.data.success) {
         setApplySuccess('✅ Application submitted successfully!');
@@ -145,7 +139,6 @@ const GigDetails = () => {
         </div>
       </div>
 
-      {/* Apply Button */}
       {gig.status === 'active' && !isOwnGig && (
         <div>
           {!showApplyForm ? (

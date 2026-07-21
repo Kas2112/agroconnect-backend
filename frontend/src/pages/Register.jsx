@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -26,14 +26,14 @@ const Register = () => {
     }
 
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/register/', {
-        username: formData.username,
-        full_name: formData.full_name,
-        phone: formData.phone,
-        password: formData.password,
-        role: formData.role,
-        location_state: formData.location_state
-      });
+     const response = await api.post('/register/', {
+    username: formData.username,
+    full_name: formData.full_name,
+    phone: formData.phone,
+    password: formData.password,
+    role: formData.role,
+    location_state: formData.location_state
+});
 
       if (response.data.success) {
         localStorage.setItem('token', response.data.data.token);

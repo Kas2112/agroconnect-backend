@@ -1,7 +1,7 @@
 // frontend/src/pages/PaymentVerify.jsx
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';  // ← FIXED: Proper import
 
 const PaymentVerify = () => {
   const [searchParams] = useSearchParams();
@@ -19,11 +19,8 @@ const PaymentVerify = () => {
 
     const verifyPayment = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get(
-          `http://127.0.0.1:8000/api/payment/verify/?reference=${reference}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        const response = await api.get(`/payment/verify/?reference=${reference}`);  // ← CHANGED
+        console.log('📥 Verification Response:', response.data);
 
         if (response.data.success) {
           setStatus('success');
@@ -34,6 +31,7 @@ const PaymentVerify = () => {
           setMessage('❌ ' + (response.data.error || 'Payment verification failed'));
         }
       } catch (error) {
+        console.error('❌ Verification error:', error);
         setStatus('error');
         setMessage('❌ ' + (error.response?.data?.error || 'Payment verification failed'));
       }

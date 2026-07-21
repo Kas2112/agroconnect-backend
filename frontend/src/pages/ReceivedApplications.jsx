@@ -1,7 +1,7 @@
 // frontend/src/pages/ReceivedApplications.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';  // ← FIXED: Proper import
 
 const ReceivedApplications = () => {
   const [apps, setApps] = useState([]);
@@ -18,12 +18,10 @@ const ReceivedApplications = () => {
     fetchApps();
   }, []);
 
+  // ✅ FIXED: Using api instead of axios
   const fetchApps = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('http://127.0.0.1:8000/api/received-applications/', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/received-applications/');  // ← CHANGED
       setApps(response.data.data);
     } catch (error) {
       console.error('Error fetching applications:', error);
@@ -37,15 +35,11 @@ const ReceivedApplications = () => {
     }
   };
 
+  // ✅ FIXED: Using api instead of axios
   const updateStatus = async (appId, status) => {
     setProcessing(appId);
     try {
-      const token = localStorage.getItem('token');
-      await axios.put(
-        `http://127.0.0.1:8000/api/applications/${appId}/status/`,
-        { status },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.put(`/applications/${appId}/status/`, { status });  // ← CHANGED
       await fetchApps();
     } catch (error) {
       console.error('Error updating status:', error);

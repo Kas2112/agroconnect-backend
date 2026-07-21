@@ -1,6 +1,7 @@
+// frontend/src/pages/MyListings.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';  // ← FIXED: Proper import
 
 const MyListings = () => {
   const [ads, setAds] = useState([]);
@@ -16,12 +17,10 @@ const MyListings = () => {
     fetchMyAds();
   }, []);
 
+  // ✅ FIXED: Using api instead of axios
   const fetchMyAds = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('http://127.0.0.1:8000/api/my-ads/', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/my-ads/');  // ← CHANGED
       setAds(response.data.data);
     } catch (error) {
       if (error.response?.status === 401) {

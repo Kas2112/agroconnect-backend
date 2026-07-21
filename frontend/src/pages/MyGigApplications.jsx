@@ -1,7 +1,7 @@
 // frontend/src/pages/MyGigApplications.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';  // ← FIXED: Proper import
 
 const MyGigApplications = () => {
   const [apps, setApps] = useState([]);
@@ -17,12 +17,10 @@ const MyGigApplications = () => {
     fetchApps();
   }, []);
 
+  // ✅ FIXED: Using api instead of axios
   const fetchApps = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('http://127.0.0.1:8000/api/my-gig-applications/', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/my-gig-applications/');  // ← CHANGED
       setApps(response.data.data);
     } catch (error) {
       console.error('Error fetching applications:', error);

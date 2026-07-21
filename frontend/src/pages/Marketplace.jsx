@@ -1,7 +1,7 @@
 // frontend/src/pages/Marketplace.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';  // ← FIXED: Proper import
 
 const Marketplace = () => {
   const [ads, setAds] = useState([]);
@@ -26,12 +26,10 @@ const Marketplace = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // ✅ FIXED: Using api instead of axios
   const fetchAds = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('http://127.0.0.1:8000/api/ads/', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/ads/');  // ← CHANGED
       setAds(response.data.data);
     } catch (error) {
       if (error.response?.status === 401) {
@@ -44,12 +42,10 @@ const Marketplace = () => {
     }
   };
 
+  // ✅ FIXED: Using api instead of axios
   const fetchUnreadCount = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('http://127.0.0.1:8000/api/messages/unread-count/', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/messages/unread-count/');  // ← CHANGED
       setUnreadCount(response.data.data?.unread_count || 0);
     } catch (error) {
       // Silently fail

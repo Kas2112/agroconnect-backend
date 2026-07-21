@@ -1,6 +1,6 @@
 // frontend/src/components/ImageUpload.jsx
 import React, { useState, useRef } from 'react';
-import axios from 'axios';
+import api from '../services/api';  // ← FIXED: Use api service
 
 const ImageUpload = ({ onImagesChange, existingImages = [] }) => {
   const [images, setImages] = useState(existingImages);
@@ -25,30 +25,26 @@ const ImageUpload = ({ onImagesChange, existingImages = [] }) => {
         formData.append('image', file);
 
         const token = localStorage.getItem('token');
-        const response = await axios.post(
-          'http://127.0.0.1:8000/api/upload-image/',
-          formData,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'multipart/form-data'
-            },
-            onUploadProgress: (progressEvent) => {
-              const percentCompleted = Math.round(
-                ((uploaded + progressEvent.loaded / progressEvent.total) / totalFiles) * 100
-              );
-              setUploadProgress(percentCompleted);
-            }
+        
+        // ✅ FIXED: Using api instead of axios with hardcoded URL
+        const response = await api.post('/upload-image/', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          },
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round(
+              ((uploaded + progressEvent.loaded / progressEvent.total) / totalFiles) * 100
+            );
+            setUploadProgress(percentCompleted);
           }
-        );
+        });
 
         if (response.data.success) {
-          // Make sure the URL is complete
           let imageUrl = response.data.data.url;
           
           // If URL doesn't start with http, add the base URL
           if (!imageUrl.startsWith('http')) {
-            imageUrl = `http://127.0.0.1:8000${imageUrl}`;
+            imageUrl = `https://agroconnect-backend-ki3c.onrender.com${imageUrl}`;
           }
           
           console.log('📸 Image URL:', imageUrl);
@@ -81,15 +77,10 @@ const ImageUpload = ({ onImagesChange, existingImages = [] }) => {
     onImagesChange(newImages);
 
     try {
-      const token = localStorage.getItem('token');
       const filename = imageToRemove.split('/').pop();
-      await axios.delete(
-        'http://127.0.0.1:8000/api/delete-image/',
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          data: { filename: `ads/${filename}` }
-        }
-      );
+      await api.delete('/delete-image/', {
+        data: { filename: `ads/${filename}` }
+      });
     } catch (error) {
       console.error('Error deleting image:', error);
     }

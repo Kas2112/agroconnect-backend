@@ -1,7 +1,7 @@
 // frontend/src/pages/ChatList.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';  // ← FIXED: Proper import
 
 const ChatList = () => {
   const [conversations, setConversations] = useState([]);
@@ -19,17 +19,14 @@ const ChatList = () => {
     if (userData) setUser(JSON.parse(userData));
     fetchConversations();
     
-    // Refresh every 10 seconds
     const interval = setInterval(fetchConversations, 10000);
     return () => clearInterval(interval);
   }, []);
 
+  // ✅ FIXED: Using api instead of axios
   const fetchConversations = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('http://127.0.0.1:8000/api/conversations/', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/conversations/');  // ← CHANGED
       setConversations(response.data.data);
     } catch (error) {
       console.error('Error fetching conversations:', error);
@@ -51,7 +48,7 @@ const ChatList = () => {
     if (!dateString) return '';
     const date = new Date(dateString);
     const now = new Date();
-    const diff = (now - date) / 1000; // seconds
+    const diff = (now - date) / 1000;
     
     if (diff < 60) return 'Just now';
     if (diff < 3600) return Math.floor(diff / 60) + 'm';

@@ -3,6 +3,15 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
+# Try to import dj_database_url dynamically to avoid unresolved import diagnostics
+import importlib
+
+dj_database_url = None
+try:
+    dj_database_url = importlib.import_module('dj_database_url')
+except ImportError:
+    dj_database_url = None
+
 # Load environment variables
 load_dotenv()
 
@@ -66,13 +75,26 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'agroconnect.wsgi.application'
 
-# Database - SQLite
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# ============ DATABASE - Use PostgreSQL if available ============
+if dj_database_url and os.getenv('DATABASE_URL'):
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.getenv('DATABASE_URL'),
+            conn_max_age=600
+        )
     }
-}
+    print("✅ Using PostgreSQL database")
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+    if os.getenv('DATABASE_URL'):
+        print("⚠️ dj_database_url not installed, using SQLite despite DATABASE_URL being set")
+    else:
+        print("⚠️ Using SQLite database (fallback)")
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [

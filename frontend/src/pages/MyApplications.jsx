@@ -1,7 +1,7 @@
 // frontend/src/pages/MyApplications.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';  // ← FIXED: Proper import
 import PayButton from '../components/PayButton';
 import ReleasePaymentButton from '../components/ReleasePaymentButton';
 
@@ -19,12 +19,10 @@ const MyApplications = () => {
     fetchApps();
   }, []);
 
+  // ✅ FIXED: Using api instead of axios
   const fetchApps = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('http://127.0.0.1:8000/api/my-applications/', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/my-applications/');  // ← CHANGED
       setApps(response.data.data);
     } catch (error) {
       console.error('Error fetching applications:', error);
@@ -93,7 +91,6 @@ const MyApplications = () => {
                 </div>
               )}
               
-              {/* ============ PAY BUTTON ============ */}
               {app.status === 'accepted' && (
                 <div style={{ marginTop: '10px' }}>
                   <PayButton 
@@ -113,7 +110,6 @@ const MyApplications = () => {
                 </div>
               )}
               
-              {/* ============ RELEASE PAYMENT BUTTON (ONLY FOR BUYER) ============ */}
               {app.status === 'paid' && app.transaction && (
                 <div style={{ marginTop: '10px' }}>
                   <div style={{ 
@@ -130,7 +126,6 @@ const MyApplications = () => {
                     </p>
                   </div>
                   
-                  {/* Release Button - ONLY the buyer sees this */}
                   {app.transaction && (
                     <ReleasePaymentButton 
                       transactionId={app.transaction.id}

@@ -1,7 +1,7 @@
 // frontend/src/pages/Gigs.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';  // ← FIXED: Proper import
 
 const Gigs = () => {
   const [gigs, setGigs] = useState([]);
@@ -20,12 +20,10 @@ const Gigs = () => {
     fetchGigs();
   }, []);
 
+  // ✅ FIXED: Using api instead of axios
   const fetchGigs = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('http://127.0.0.1:8000/api/gigs/', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/gigs/');  // ← CHANGED
       setGigs(response.data.data);
     } catch (error) {
       console.error('Error fetching gigs:', error);

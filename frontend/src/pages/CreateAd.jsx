@@ -1,7 +1,7 @@
 // frontend/src/pages/CreateAd.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';  // ← FIXED: Proper import
 import ImageUpload from '../components/ImageUpload';
 
 const CreateAd = () => {
@@ -29,12 +29,10 @@ const CreateAd = () => {
     fetchCrops();
   }, []);
 
+  // ✅ FIXED: Using api instead of axios
   const fetchCrops = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('http://127.0.0.1:8000/api/crops/', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/crops/');  // ← CHANGED
       setCrops(response.data.data);
     } catch (error) {
       console.error('Error fetching crops:', error);
@@ -45,6 +43,7 @@ const CreateAd = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // ✅ FIXED: Using api instead of axios
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -52,8 +51,6 @@ const CreateAd = () => {
     setSuccess('');
 
     try {
-      const token = localStorage.getItem('token');
-      
       const payload = {
         ...formData,
         images: images
@@ -61,11 +58,7 @@ const CreateAd = () => {
       
       console.log('📤 Sending to Django:', payload);
       
-      const response = await axios.post(
-        'http://127.0.0.1:8000/api/ads/create/',
-        payload,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const response = await api.post('/ads/create/', payload);  // ← CHANGED
 
       console.log('📥 Response:', response.data);
 

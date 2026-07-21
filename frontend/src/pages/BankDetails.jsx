@@ -1,7 +1,7 @@
 // frontend/src/pages/BankDetails.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 
 const BankDetails = () => {
   const [bankDetails, setBankDetails] = useState({
@@ -45,12 +45,10 @@ const BankDetails = () => {
     }
   };
 
+  // ✅ FIXED: Using api instead of axios
   const fetchBankDetails = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('http://127.0.0.1:8000/api/bank-details/', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/bank-details/');  // ← CHANGED
       if (response.data.success && response.data.data.has_bank_details) {
         setHasBankDetails(true);
         setBankDetails({
@@ -71,18 +69,14 @@ const BankDetails = () => {
     });
   };
 
+  // ✅ FIXED: Using api instead of axios
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
     setMessage('');
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post(
-        'http://127.0.0.1:8000/api/bank-details/add/',
-        bankDetails,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const response = await api.post('/bank-details/add/', bankDetails);  // ← CHANGED
 
       if (response.data.success) {
         setMessage('✅ Bank details saved successfully!');

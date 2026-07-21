@@ -1,7 +1,7 @@
 // frontend/src/pages/AdDetails.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';  // ← Using api, not axios
 
 const AdDetails = () => {
   const { id } = useParams();
@@ -32,14 +32,11 @@ const AdDetails = () => {
     fetchAdDetails();
   }, []);
 
+  // ✅ FIXED - Using api instead of axios
   const fetchAdDetails = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`http://127.0.0.1:8000/api/ads/${id}/`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get(`/ads/${id}/`);  // ← CHANGED
       setAd(response.data.data);
-      // Pre-fill quantity
       setApplicationData(prev => ({
         ...prev,
         requested_quantity: response.data.data.quantity || '',
@@ -59,6 +56,7 @@ const AdDetails = () => {
     });
   };
 
+  // ✅ FIXED - Using api instead of axios
   const handleApplySubmit = async (e) => {
     e.preventDefault();
     setApplying(true);
@@ -66,22 +64,16 @@ const AdDetails = () => {
     setApplySuccess('');
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post(
-        'http://127.0.0.1:8000/api/applications/create/',
-        {
-          ad_id: parseInt(id),
-          requested_quantity: parseFloat(applicationData.requested_quantity),
-          offered_price: parseFloat(applicationData.offered_price),
-          message: applicationData.message || ''
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const response = await api.post('/applications/create/', {  // ← CHANGED
+        ad_id: parseInt(id),
+        requested_quantity: parseFloat(applicationData.requested_quantity),
+        offered_price: parseFloat(applicationData.offered_price),
+        message: applicationData.message || ''
+      });
 
       if (response.data.success) {
         setApplySuccess('✅ Application submitted successfully! The farmer will review your request.');
         setShowApplyForm(false);
-        // Reset form
         setApplicationData({
           requested_quantity: '',
           offered_price: '',
@@ -106,18 +98,13 @@ const AdDetails = () => {
     }
   };
 
-  // ============ CHAT FUNCTION ============
+  // ✅ FIXED - Using api instead of axios
   const startChat = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post(
-        'http://127.0.0.1:8000/api/conversations/create/',
-        {
-          other_user_id: ad.seller.id,
-          ad_id: ad.id
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const response = await api.post('/conversations/create/', {  // ← CHANGED
+        other_user_id: ad.seller.id,
+        ad_id: ad.id
+      });
       
       if (response.data.success) {
         navigate(`/chat/${response.data.data.id}`);
@@ -128,10 +115,10 @@ const AdDetails = () => {
     }
   };
 
+  // Rest of the component remains the same...
   if (loading) return <div className="container"><p>Loading...</p></div>;
   if (!ad) return <div className="container"><p>Ad not found</p></div>;
 
-  // Check if user is the seller (can't apply to own ad)
   const isOwnAd = user && ad.seller && user.id === ad.seller.id;
 
   return (
@@ -144,7 +131,6 @@ const AdDetails = () => {
 
       <h2>{ad.title}</h2>
       
-      {/* ============ IMAGE DISPLAY ============ */}
       {ad.images && ad.images.length > 0 && (
         <div style={{ 
           display: 'flex', 
@@ -193,9 +179,7 @@ const AdDetails = () => {
         )}
       </div>
 
-      {/* Action Buttons */}
       <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-        {/* Apply Button - Only show if ad is active and user is not the seller */}
         {ad.status === 'active' && !isOwnAd && (
           <button 
             onClick={() => setShowApplyForm(true)} 
@@ -204,8 +188,6 @@ const AdDetails = () => {
             📩 Apply to Buy
           </button>
         )}
-
-        {/* Message Seller Button - Show for everyone except the seller themselves */}
         {!isOwnAd && (
           <button 
             onClick={startChat} 
@@ -216,7 +198,6 @@ const AdDetails = () => {
         )}
       </div>
 
-      {/* Apply Form */}
       {showApplyForm && (
         <div style={{ marginTop: '15px', padding: '15px', background: '#f0fdf4', borderRadius: '8px', border: '1px solid #22c55e' }}>
           <h3 style={{ marginBottom: '10px' }}>📝 Submit Purchase Request</h3>
@@ -283,7 +264,6 @@ const AdDetails = () => {
         </div>
       )}
 
-      {/* Show message if user is the seller */}
       {isOwnAd && (
         <div style={{ marginTop: '15px', padding: '10px', background: '#dbeafe', borderRadius: '8px', textAlign: 'center' }}>
           <p style={{ margin: 0 }}>📢 This is your own ad. You cannot apply to buy it.</p>
