@@ -120,10 +120,7 @@ USE_TZ = True
 
 # ============ STATIC FILES ============
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-# For Render deployment - serve static files properly
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # ← This is where collectstatic puts files
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
